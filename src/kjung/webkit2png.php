@@ -47,7 +47,7 @@ class webkit2png {
 	 * Holds the query to be executed.
 	 * @var string
 	 */
-	private $query = 'webkit2png ';
+	const QUERY = 'webkit2png ';
 
 	/**
 	 * Initialize the class
@@ -57,30 +57,22 @@ class webkit2png {
 	{
 		// Set the environment path so you have access to webkit2png within PHP.
 		// If you installed webkit2png via homebrew, include the following path.
-		putenv("PATH=" . $_env["path"] .':/usr/local/bin');
+		putenv('PATH=' . (@$_env['path'] ?: '') .':/usr/local/bin');
 		$webkit2png = trim(shell_exec('type -P webkit2png'));
 
-		try
-		{	if (empty($webkit2png)){
-			throw new \Exception('Unable to find webkit2png. Please check your environment paths to ensure that PHP has access to the webkit2png binary.');
-			}
-		}
-
-		catch (\Exception $e)
-		{
-			die($e->getMessage());
-		}
-
-		$this->url = $url;
-		$this->setUrl();
+        if (empty($webkit2png)){
+		    throw new \Exception('Unable to find webkit2png. Please check your environment paths to ensure that PHP has access to the webkit2png binary.');
+        }
+        
+		$this->setUrl($url);
 	}
 
 	/**
 	 * Set the $url variable
 	 */
-	private function setUrl()
+	private function setUrl($url)
 	{
-		$this->options['url'] = $this->url;
+		$this->options['url'] = $url;
 	}
 
 	/**
@@ -91,14 +83,22 @@ class webkit2png {
 	{
 		$this->options = array_merge($this->options, $options);
 	}
+    
+    /**
+     * Get user defined options
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
 
 	/**
 	 * Generate the image(s)
 	 */
 	public function getImage()
 	{
-		$this->setQuery();
-		return shell_exec(trim($this->query));
+		return shell_exec($this->getQuery());
 	}
 
 	/**
@@ -106,28 +106,26 @@ class webkit2png {
 	 */
 	public function getQuery()
 	{
-		$this->setQuery();
-		return trim($this->query);
-	}
+        
+        $options = array();
+        
+        foreach ($this->options as $flag => $val) {
+            if (true !== $val
+                && null != $val
+                && isset($this->flags[$flag])
+                && $this->flags[$flag] !== $val) {
+                    $options[$flag] = $val;
+            }
+                
+        }
 
-	/**
-	 * Set the query based on the provided URL and options
-	 */
-	private function setQuery()
-	{
-		array_walk($this->options, function(&$value){
-			if ($value === true) {
-				$value = null;
-			}
-		});
-
-		$options = array_merge_recursive($this->flags, $this->options);
-		$options = array_diff($options, $this->flags);
-		$options = array_intersect_key($options, $this->flags);
+        $query = self::QUERY;
 
 		foreach ($options as $key => $option) {
-			$this->query .= $option[0] . ' ' . $option[1] . ' ';
+			$query .= $option[0] . ' ' . $option[1] . ' ';
 		}
+        
+		return trim($query);
 	}
 
 }
