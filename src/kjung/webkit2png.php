@@ -4,17 +4,22 @@ namespace kjung;
 /**
 * PHP wrapper class for the webkit2png application on OS X.
 *
-* @author Kevin Jung
+* @author Kevin Jung, et al.
 *
 */
-class webkit2png {
+class webkit2png
+{
+	/**
+	 * Holds the query to be executed.
+	 * @var string
+	 */
+	private $binary = 'webkit2png';
+    
 	/**
 	 * Holds the options and contains the default directory path.
 	 * @var array
 	 */
-	private $options = array(
-		'dir' => 'images/',
-	);
+	private $options;
 
 	/**
 	 * Set flags vlaues for the options.
@@ -45,75 +50,43 @@ class webkit2png {
 	);
 
 	/**
-	 * Holds the query to be executed.
-	 * @var string
-	 */
-	const QUERY = 'webkit2png ';
-
-	/**
 	 * Initialize the class
 	 * @param string $url Provied URL
 	 */
-	public function __construct($url)
+	public function __construct($defaults = array(), $path = '')
 	{
 		// Set the environment path so you have access to webkit2png within PHP.
 		// If you installed webkit2png via homebrew, include the following path.
-		putenv('PATH=' . (@$_env['path'] ?: '') .':/usr/local/bin');
-		$webkit2png = trim(shell_exec('type -P webkit2png'));
+		
+        $this->binary = rtrim($path, '/') . '/' . $this->binary;
+        
+		$webkit2png = trim(shell_exec('type -P ' . $this->binary));
 
         if (empty($webkit2png)){
 		    throw new \Exception('Unable to find webkit2png. Please check your environment paths to ensure that PHP has access to the webkit2png binary.');
         }
         
-		$this->setUrl($url);
+		$this->options = $defaults;
 	}
-
-	/**
-	 * Set the $url variable
-	 */
-	private function setUrl($url)
-	{
-        var_dump($url);
-		$this->options['url'] = $url;
-	}
-
-	/**
-	 * Set the $options variable
-	 * @param array $options Provided options
-	 */
-	public function setOptions($options = null)
-	{
-		$this->options = array_merge($this->options, $options);
-	}
-    
-    /**
-     * Get user defined options
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
 
 	/**
 	 * Generate the image(s)
 	 */
-	public function getImage()
+	public function grab($url = null, $options = null)
 	{
-        $query = $this->getQuery();
-        var_dump($query);
-		return shell_exec($query);
+        $query = $this->query($url, $options);
+		return shell_exec($this->binary . $query);
 	}
 
 	/**
 	 * Generate and return the created query
 	 */
-	public function getQuery()
+	private function query($url, $user_options)
 	{
-        
+        $user_options = array_merge($user_options, $this->options);
+        $user_options['url'] = $url;
         $options = array();
-        
-        foreach ($this->options as $flag => $val) {
+        foreach ($user_options as $flag => $val) {
             if (isset($this->flags[$flag])) {
                 $val = true === $val ? null : $val;
                 $options[$flag] = array(
@@ -122,14 +95,13 @@ class webkit2png {
                 );
             }
         }
-
-        $query = self::QUERY;
-
+        
+        $query = '';
 		foreach ($options as $key => $option) {
-			$query .= $option[0] . ' ' . $option[1] . ' ';
+			$query .= ' ' . $option[0] . ' ' . $option[1];
 		}
         
-		return trim($query);
+		return $query;
 	}
 
 }
