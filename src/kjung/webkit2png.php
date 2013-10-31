@@ -21,7 +21,7 @@ class webkit2png {
 	 * @var array
 	 */
 	private $flags = array(
-		'url'            => null,
+		'url'            => '',
 		'width'          => '-W',
 		'height'         => '-H',
 		'zoom'           => '-z',
@@ -30,6 +30,7 @@ class webkit2png {
 		'clipped'        => '-C',
 		'clipped-width'  => '--clipwidth',
 		'clipped-height' => '--clipheight',
+        'max-width'      => '--UNSAFE-max-width',
 		'scale'          => '-s',
 		'dir'            => '-D',
 		'filename'       => '-o',
@@ -72,6 +73,7 @@ class webkit2png {
 	 */
 	private function setUrl($url)
 	{
+        var_dump($url);
 		$this->options['url'] = $url;
 	}
 
@@ -98,7 +100,9 @@ class webkit2png {
 	 */
 	public function getImage()
 	{
-		return shell_exec($this->getQuery());
+        $query = $this->getQuery();
+        var_dump($query);
+		return shell_exec($query);
 	}
 
 	/**
@@ -110,13 +114,13 @@ class webkit2png {
         $options = array();
         
         foreach ($this->options as $flag => $val) {
-            if (true !== $val
-                && null != $val
-                && isset($this->flags[$flag])
-                && $this->flags[$flag] !== $val) {
-                    $options[$flag] = $val;
+            if (isset($this->flags[$flag])) {
+                $val = true === $val ? null : $val;
+                $options[$flag] = array(
+                    $this->flags[$flag],
+                    $val ?: ''
+                );
             }
-                
         }
 
         $query = self::QUERY;
