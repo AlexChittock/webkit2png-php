@@ -1,7 +1,7 @@
 {
-    "name": "kjung/webkit2png-php",
+    "name": "alexchittock/webkit2png-php",
     "type": "library",
-    "keywords": ["webkit2png","webkit2png-php","kjung"],
+    "keywords": ["webkit2png","webkit2png-php","kjung", "alexchittock"],
     "description": "PHP wrapper for the webkit2png binary on OS X.",
     "license": "MIT",
     "authors": [
@@ -9,6 +9,11 @@
             "name": "Kevin Jung",
             "email": "admin@kjung.ca",
             "homepage": "https://github.com/kjunggithub"
+        },
+        {
+            "name": "Alex Chittock",
+            "email": "alex@monsterhq.co.uk",
+            "homepage": "https://github.com/alexchittock"
         }
     ],
     "version": "1.0.1-dev",
@@ -18,7 +23,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/kjunggithub/webkit2png-php"
+            "url": "https://github.com/alexchittock/webkit2png-php"
         }
     ],
     "autoload": {
